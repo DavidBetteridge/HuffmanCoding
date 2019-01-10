@@ -49,22 +49,24 @@ namespace HuffmanCoding
         private static string DecodeText(CombinedNode tree, string encodedText)
         {
             var result = "";
-            var offset = 1;
+            var offset = 0;
             INode currentNode = tree;
-            while (offset <= encodedText.Length)
+            while (offset < encodedText.Length)
             {
-                if (currentNode is LeafNode leafNode)
-                {
-                    result += leafNode.Key;
-                    currentNode = tree;
-                }
-                else if (currentNode is CombinedNode combinedNode)
+                if (currentNode is CombinedNode combinedNode)
                 {
                     if (encodedText[offset] == '0')
                         currentNode = combinedNode.LHS;
                     else
                         currentNode = combinedNode.RHS;
                 }
+
+                if (currentNode is LeafNode leafNode)
+                {
+                    result += leafNode.Key;
+                    currentNode = tree;
+                }
+
                 offset++;
             }
             return result;
@@ -78,7 +80,7 @@ namespace HuffmanCoding
             Console.ResetColor();
         }
 
-        private static void BuildLookupTable(Dictionary<char, string> lookup, INode node, string parentValue = "1")
+        private static void BuildLookupTable(Dictionary<char, string> lookup, INode node, string parentValue = "")
         {
             if (node is LeafNode leafNode)
                 lookup[leafNode.Key] = parentValue;
@@ -90,7 +92,7 @@ namespace HuffmanCoding
             }
         }
 
-        private static void DisplayTree(INode node, string parentValue = "1")
+        private static void DisplayTree(INode node, string parentValue = "")
         {
             if (node is LeafNode leafNode)
                 Console.WriteLine($"{leafNode.Key} is {parentValue}");
