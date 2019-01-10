@@ -11,6 +11,6 @@
             this.Weight = Weight;
         }
 
-        public override string ToString() => $"{Key} {Weight}";
+        public override string ToString() => $"{Key} occurs {Weight} times";
     }
 }

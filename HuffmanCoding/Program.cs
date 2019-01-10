@@ -5,40 +5,78 @@ using System.Linq;
 
 namespace HuffmanCoding
 {
-
     class Program
     {
-        static IEnumerable<LeafNode> OrderLettersByFrequencyUsingLinq(IEnumerable<char> fileText)
-        {
-            return fileText.GroupBy(c => c)
-                           .Select(grp => new LeafNode(grp.Key, grp.Count()))
-                           .OrderBy(grp => grp.Weight);
-        }
-
         static void Main(string[] args)
         {
+            DisplayHeading("Original Text");
             var fileText = File.ReadAllText("Target.txt");
-            var lettersByFrequency = OrderLettersByFrequencyUsingLinq(fileText);
-            var tree = BuildTree(lettersByFrequency);
+            Console.WriteLine(fileText);
 
+            DisplayHeading("Letters by Frequency");
+            var lettersByFrequency = OrderLettersByFrequencyUsingLinq(fileText);
+            foreach (var item in lettersByFrequency)
+                Console.WriteLine(item);
+
+            DisplayHeading("Huffman Codes");
+            var tree = BuildTree(lettersByFrequency);
             var lookup = new Dictionary<char, string>();
+            DisplayTree(tree);
             BuildLookupTable(lookup, tree);
 
+            DisplayHeading("Encoded Text");
             var encodedText = string.Join("", fileText.Select(c => lookup[c]));
+            Console.WriteLine(encodedText);
 
-            while (encodedText.Length >= 64)
-            {
-                var n = Convert.ToUInt64(encodedText.Substring(0, 64), 2);
-                Console.Write(n);
-                encodedText = encodedText.Substring(64);
-            }
-            var nLeft = Convert.ToUInt64(encodedText, 2);
-            Console.Write(nLeft);
+            DisplayHeading("Decoded Text");
+            var decodedText = DecodeText(tree, encodedText);
+            Console.WriteLine(decodedText);
 
-            // Console.WriteLine(encodedText);
+
+            //while (encodedText.Length >= 64)
+            //{
+            //    var n = Convert.ToUInt64(encodedText.Substring(0, 64), 2);
+            //    Console.Write(n);
+            //    encodedText = encodedText.Substring(64);
+            //}
+            //var nLeft = Convert.ToUInt64(encodedText, 2);
+            //Console.Write(nLeft);
+
+            // 
             Console.ReadKey(true);
         }
 
+        private static string DecodeText(CombinedNode tree, string encodedText)
+        {
+            var result = "";
+            var offset = 1;
+            INode currentNode = tree;
+            while (offset <= encodedText.Length)
+            {
+                if (currentNode is LeafNode leafNode)
+                {
+                    result += leafNode.Key;
+                    currentNode = tree;
+                }
+                else if (currentNode is CombinedNode combinedNode)
+                {
+                    if (encodedText[offset] == '0')
+                        currentNode = combinedNode.LHS;
+                    else
+                        currentNode = combinedNode.RHS;
+                }
+                offset++;
+            }
+            return result;
+        }
+
+        private static void DisplayHeading(string caption)
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine();
+            Console.WriteLine(caption);
+            Console.ResetColor();
+        }
 
         private static void BuildLookupTable(Dictionary<char, string> lookup, INode node, string parentValue = "1")
         {
@@ -92,6 +130,13 @@ namespace HuffmanCoding
                 return leafQueue.Dequeue();
             else
                 return combinedQueue.Dequeue();
+        }
+
+        static IEnumerable<LeafNode> OrderLettersByFrequencyUsingLinq(IEnumerable<char> fileText)
+        {
+            return fileText.GroupBy(c => c)
+                           .Select(grp => new LeafNode(grp.Key, grp.Count()))
+                           .OrderBy(grp => grp.Weight);
         }
     }
 }
