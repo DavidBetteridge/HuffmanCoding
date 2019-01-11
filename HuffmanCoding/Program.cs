@@ -13,6 +13,9 @@ namespace HuffmanCoding
             var fileText = File.ReadAllText("Target.txt");
             Console.WriteLine(fileText);
 
+            DisplayHeading("Letter pairs (letter1 is always folled by letter2");
+            FindPairs(fileText);
+
             DisplayHeading("Letters by Frequency");
             var lettersByFrequency = OrderLettersByFrequencyUsingLinq(fileText);
             foreach (var item in lettersByFrequency)
@@ -44,6 +47,18 @@ namespace HuffmanCoding
 
             // 
             Console.ReadKey(true);
+        }
+
+        private static void FindPairs(IEnumerable<char> text)
+        {
+            var pairs = ("*" + text)
+                            .Zip(text, (first, second) => (first: first, second: second))
+                            .Distinct()
+                            .GroupBy(grp => grp.first);
+            foreach (var p in pairs.Where(a => a.Key != '*' && a.Count() == 1))
+            {
+                Console.WriteLine($"{p.Key} {p.First().second}  [{(int)p.Key  }]->[{(int)p.First().second }]");
+            }
         }
 
         private static string DecodeText(CombinedNode tree, string encodedText)
